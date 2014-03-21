@@ -12,5 +12,6 @@ how to run:
   catkin_make install
   air_mod_run.sh 2500
 
-
-setup.sh adds the scripts subdirectory to the path, and catkin_make install generates a custom run script for your computer
+setup.sh 
+1. sources catkin_ws/devel/setup.sh, so you don't have to add it to your .bashrc file
+2. adds the scripts subdirectory to the path, and catkin_make install generates a custom run script for your computer
