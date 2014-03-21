@@ -94,17 +94,17 @@ include_directories(${Boost_INCLUDE_DIRS})
 # include_directories(src/${PROJECT_NAME}/src)
 
 ## Declare a cpp library
- add_library(directory
-   src/directory.cpp
-   )
- target_link_libraries(directory ${Boost_LIBRARIES})
- add_library(stats
-   src/stats.cpp
-   )
- add_library(surf_map
-   src/surf_map.cpp
-   )
- target_link_libraries(directory ${Boost_LIBRARIES})
+add_library(directory
+  src/directory.cpp
+  )
+target_link_libraries(directory ${Boost_LIBRARIES})
+add_library(stats
+  src/stats.cpp
+  )
+add_library(surf_map
+  src/surf_map.cpp
+  )
+target_link_libraries(directory ${Boost_LIBRARIES})
 
 ## Declare a cpp executable
 add_executable(air_mod src/vision.cpp)
@@ -114,11 +114,11 @@ add_executable(air_mod src/vision.cpp)
 # add_dependencies(air_mod_node air_mod_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(air_mod
-   directory stats surf_map
-   ${Boost_LIBRARIES}
-   ${OpenCV_LIBS}
- )
+target_link_libraries(air_mod
+  directory stats surf_map
+  ${Boost_LIBRARIES}
+  ${OpenCV_LIBS}
+)
 
 #############
 ## Install ##
@@ -135,7 +135,7 @@ add_executable(air_mod src/vision.cpp)
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS air_mod
+install(TARGETS air_mod surf_map directory stats
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
