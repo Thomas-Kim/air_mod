@@ -32,17 +32,37 @@ vector<DMatch> & surf_map::match(path img, keypoints_t & matched_keypoints, path
 
     // DMatch contains queryIdx, trainIdx, and imgIdx
     // Want to iterate through matches
-    matched_path = database[training_descriptors.at(matches.begin()->imgIdx)].second;
-    matched_keypoints = database[training_descriptors.at(matches.begin()->imgIdx)].first;
-    int count = 0;
 
+    std::map<int, int> match_filter;
     for(vector<DMatch>::const_iterator itr = matches.begin(); itr != matches.end(); itr++){
-        count++;
-        std::cout << "queryIdx: " << std::setw(3) << (*itr).queryIdx <<
-        " | trainIdx: " << std::setw(3) << (*itr).trainIdx <<
-        " | imgIdx: " << (*itr).imgIdx << std::endl;
+            match_filter[itr->imgIdx] += 1;
     }
 
+    /* remove bad matches */
+    int max_value = -1;
+    int max_idx = -1;
+    for(std::map<int, int>::iterator it = match_filter.begin(); it != match_filter.end(); ++it) {
+        if(it->second > max_value) {
+            max_value = it->second;
+            max_idx = it->first;
+        }
+    }
+
+    vector<DMatch> good_matches;
+
+    for(vector<DMatch>::const_iterator it = matches.begin(); it != matches.end(); it++)
+        if(it->imgIdx == max_idx) {
+            std::cout << "queryIdx: " << std::setw(3) << (*it).queryIdx <<
+                " | trainIdx: " << std::setw(3) << (*it).trainIdx <<
+                " | imgIdx: " << std::setw(3) << (*it).imgIdx <<
+                " | distance: " << std::setw(3) << (*it).distance << std::endl;
+            good_matches.push_back(*it);
+        }
+
+    /* TODO fix this */
+    matches = good_matches;
+    matched_path = database[training_descriptors.at(matches.begin()->imgIdx)].second;
+    matched_keypoints = database[training_descriptors.at(matches.begin()->imgIdx)].first;
 
     return matches;
 }

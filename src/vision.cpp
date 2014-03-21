@@ -103,13 +103,11 @@ int main(int argc, char * argv[]){
             std::cout << *itr << " matched with " << matched_path << " and had a DMatch vector size of " << matches.size() << std::endl;
             naive_model.add_match(matched_path);
             current_image = *itr;
-		/*
             drawMatches(imread(current_image.string()), current_keypoints, imread(matched_path.string()), matched_keypoints, matches, img_matches);
             imshow("Chicken", img_matches);
             char choice = '\0';
             while(choice != '\n')
                 choice = waitKey(10);
-		*/
             if(naive_model.get_match(0.95) != "") {
                 std::cout << "Matched: " << naive_model.get_match(0.95) << std::endl;
                 found = true;
