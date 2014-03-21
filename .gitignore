@@ -11,3 +11,6 @@
 *.lai
 *.la
 *.a
+
+# non-portable run script
+scripts/air_mod_run.sh

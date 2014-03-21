@@ -6,6 +6,19 @@ find_package(catkin REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
 
+# create run script for current environment
+file(WRITE ${PROJECT_SOURCE_DIR}/scripts/air_mod_run.sh 
+  "#!/usr/bin/env bash\n"
+  "dir=" ${PROJECT_SOURCE_DIR} "\n"
+  "execute=\"rosrun air_mod air_mod --training $dir/res/training_images/coffee_maker --detection $dir/res/coffee_detection --threshold $1\"\n"
+  "echo $execute\n"
+  "echo \"Running with a threshold of $1\"\n"
+  "`$execute`\n"
+  )
+
+execute_process(COMMAND chmod 755 ${PROJECT_SOURCE_DIR}/scripts/air_mod_run.sh)
+
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -119,16 +132,6 @@ target_link_libraries(air_mod
   ${Boost_LIBRARIES}
   ${OpenCV_LIBS}
 )
-
-# create run script for current environment
-file(WRITE scripts/air_mod_run.sh 
-  "dir=" ${PROJECT_SOURCE_DIR} "\n"
-  "execute=\"rosrun air_mod air_mod --training $dir/res/training_images/coffee_maker --detection $dir/res/coffee_detection --threshold $1\n\""
-  "echo $execute\n"
-  "echo \"Running with a threshold of $1\"\n"
-  "`$execute`\n")
-execute_process(COMMAND chmod 755 scripts/air_mod_run.sh)
-
 
 
 #############
