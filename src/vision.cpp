@@ -1,0 +1,123 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+
+/* OPENCV HEADERS */
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
+#include "opencv2/nonfree/features2d.hpp"
+
+/* BOOST HEADERS */
+#include <boost/program_options/cmdline.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/parsers.hpp>
+
+#include "directory.hpp"
+#include "surf_map.hpp"
+#include "stats.hpp"
+
+// Being lazy :|
+namespace po = boost::program_options;
+using namespace std;
+using namespace fs;
+using namespace po;
+using namespace cv;
+
+typedef Mat Descriptors;
+typedef vector<KeyPoint> KeyPoints;
+typedef pair<string, Mat> MatPair;
+
+int main(int argc, char * argv[]){
+    path training_path, detection_path;
+    int surf_threshold;
+    /* Command line argument processing */
+    options_description desc("Arguments");
+    desc.add_options()
+        ("help", "print help")
+        ("training", value<string>(), "-t/--training <DIRECTORY>, pass in training image set")
+        ("detection", value<string>(), "-d/--detection <DIRECTORY>, pass in testing image set")
+        ("threshold", value<int>(), "-th/--threshold <INT>, pass in surf threshold")
+        ;
+    variables_map vm;
+    store(parse_command_line(argc, argv, desc), vm);
+    notify(vm);
+
+    if(vm.count("help")){
+        cout << desc << endl;
+        return 0;
+    }
+
+    if(vm.count("training"))
+        training_path = path(vm["training"].as<string>());
+    else{
+        cerr << "training image set not specified" << endl;
+        cerr << "--training <TRAINING_SET_DIR>" << endl;
+        return 1;
+    }
+    if(vm.count("detection"))
+        detection_path = path(vm["detection"].as<string>());
+    else{
+        cerr << "testing image set not specified" << endl;
+        cerr << "--detection <TESTING_SET_DIR>" << endl;
+        return 1;
+    }
+    if(vm.count("threshold"))
+        surf_threshold = vm["threshold"].as<int>();
+    else
+        surf_threshold = 2500;
+    /* End of command line argument processing */
+
+    /* get_images defined in directory.cpp */
+    image_folder training(training_path);
+    image_folder detection(detection_path);
+
+    /* Initialize main window and SURF */
+    initModule_nonfree();
+    namedWindow("Chicken", WINDOW_AUTOSIZE);
+
+    surf_map smap(surf_threshold);
+    
+    training.get_new_images();
+    for(vector<path>::const_iterator itr = training.begin(); itr != training.end(); ++itr){
+      /* std::cout << *itr << std::endl; */
+      smap.train(*itr);
+    }
+    smap.init();
+
+    keypoints_t matched_keypoints;
+    /* descriptors_t matched_descriptors; */
+    fs::path matched_path;
+    naive_stats naive_model(training_path);
+    fs::path current_image;
+    keypoints_t current_keypoints;
+    vector<DMatch> matches;
+    Mat img_matches;
+    bool found = false;
+    while(found == false) {
+        detection.get_new_images();
+        for(vector<path>::const_iterator itr = detection.begin(); itr != detection.end(); ++itr) {
+            matches = smap.match(*itr, matched_keypoints, matched_path, current_keypoints);
+            std::cout << *itr << " matched with " << matched_path << " and had a DMatch vector size of " << matches.size() << std::endl;
+            naive_model.add_match(matched_path);
+            current_image = *itr;
+		/*
+            drawMatches(imread(current_image.string()), current_keypoints, imread(matched_path.string()), matched_keypoints, matches, img_matches);
+            imshow("Chicken", img_matches);
+            char choice = '\0';
+            while(choice != '\n')
+                choice = waitKey(10);
+		*/
+            if(naive_model.get_match(0.95) != "") {
+                std::cout << "Matched: " << naive_model.get_match(0.95) << std::endl;
+                found = true;
+                break;
+            }
+        }
+        detection.clear_images();
+
+    }
+    return 0;
+}
