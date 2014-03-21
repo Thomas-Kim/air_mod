@@ -9,5 +9,5 @@ how to run:
   cd <catkin_ws_root>
   catkin_make install
   cd src/air_mod
-  run.sh 2500
+  air_mod_run.sh 2500
 

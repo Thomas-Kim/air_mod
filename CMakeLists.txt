@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(air_mod)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
+## note: find_package(catkin REQUIRED COMPONENTS xyz)
 find_package(catkin REQUIRED)
 find_package(OpenCV REQUIRED)
-
-## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
 
 
@@ -70,7 +66,6 @@ find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
 ###################################
 ## catkin specific configuration ##
 ###################################
-## The catkin_package macro generates cmake config files for your package
 ## Declare things to be passed to dependent projects
 ## INCLUDE_DIRS: uncomment this if you package contains header files
 ## LIBRARIES: libraries you create in this project that dependent projects also need
@@ -79,11 +74,10 @@ find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
 catkin_package(
   INCLUDE_DIRS src
   LIBRARIES directory surf_map stats
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  # CATKIN_DEPENDS additional_catkin_pkg
+  DEPENDS Boost OpenCV
 )
 
-include_directories(${Boost_INCLUDE_DIRS})
 
 ###########
 ## Build ##
@@ -91,22 +85,29 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(src/${PROJECT_NAME}/src)
+include_directories(${Boost_INCLUDE_DIRS})
 
-## Declare a cpp library
+# user-made libraries
+
+# Directory code, leftover from previous repository
+# Delete upon addition of ROS message code
 add_library(directory
   src/directory.cpp
   )
-target_link_libraries(directory ${Boost_LIBRARIES})
+
+# Simple statistics library for image matching
+# contact Thomas
 add_library(stats
   src/stats.cpp
   )
+
+# object to handle surf functions and store surf training descriptors
 add_library(surf_map
   src/surf_map.cpp
   )
-target_link_libraries(directory ${Boost_LIBRARIES})
 
-## Declare a cpp executable
+
+# main executable
 add_executable(air_mod src/vision.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -124,18 +125,16 @@ target_link_libraries(air_mod
 ## Install ##
 #############
 
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
+## Mark executable scripts for installation
 # install(PROGRAMS
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS air_mod surf_map directory stats
+
+# install main executable
+install(TARGETS air_mod
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
