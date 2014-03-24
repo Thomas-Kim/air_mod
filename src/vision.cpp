@@ -19,6 +19,12 @@
 #include "surf_map.hpp"
 #include "stats.hpp"
 
+/* ROS HEADERS */
+#include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+
 // Being lazy :|
 namespace po = boost::program_options;
 using namespace std;
@@ -30,6 +36,15 @@ typedef Mat Descriptors;
 typedef vector<KeyPoint> KeyPoints;
 typedef pair<string, Mat> MatPair;
 
+image_transport::Subscriber img_sub;
+
+// put the detection stuff in here
+void callback(const sensor_msgs::ImageConstPtr &msg){
+
+  // Do SURF stuff in here
+
+}
+
 int main(int argc, char * argv[]){
     path training_path, detection_path;
     int surf_threshold;
@@ -38,7 +53,7 @@ int main(int argc, char * argv[]){
     desc.add_options()
         ("help", "print help")
         ("training", value<string>(), "-t/--training <DIRECTORY>, pass in training image set")
-        ("detection", value<string>(), "-d/--detection <DIRECTORY>, pass in testing image set")
+        ("detection", value<string>(), "-d/--detection <DIRECTORY>, pass in testing image set") // remove later
         ("threshold", value<int>(), "-th/--threshold <INT>, pass in surf threshold")
         ;
     variables_map vm;
@@ -57,7 +72,7 @@ int main(int argc, char * argv[]){
         cerr << "--training <TRAINING_SET_DIR>" << endl;
         return 1;
     }
-    if(vm.count("detection"))
+    if(vm.count("detection")) // remove later
         detection_path = path(vm["detection"].as<string>());
     else{
         cerr << "testing image set not specified" << endl;
@@ -71,8 +86,8 @@ int main(int argc, char * argv[]){
     /* End of command line argument processing */
 
     /* get_images defined in directory.cpp */
-    image_folder training(training_path);
-    image_folder detection(detection_path);
+    image_folder training(training_path); //
+    image_folder detection(detection_path); //
 
     /* Initialize main window and SURF */
     initModule_nonfree();
@@ -95,7 +110,9 @@ int main(int argc, char * argv[]){
     keypoints_t current_keypoints;
     vector<DMatch> matches;
     Mat img_matches;
-    bool found = false;
+
+/* Move this portion over to callback since you're doing it real time ish */
+/*    bool found = false;
     while(found == false) {
         detection.get_new_images();
         for(vector<path>::const_iterator itr = detection.begin(); itr != detection.end(); ++itr) {
@@ -115,7 +132,18 @@ int main(int argc, char * argv[]){
             }
         }
         detection.clear_images();
-
     }
+*/
+
+    /* Set up for ROS */
+    ros::init(argc, argv, "_surf_matcher");
+    ros::NodeHandle n;
+
+    image_transport::ImageTransport it(n);
+    img_sub = it.subscribe("camera/rgb/image_color", 1, callback);
+    
+    ros::spin();
+
     return 0;
+
 }

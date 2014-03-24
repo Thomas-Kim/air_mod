@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(air_mod)
 
 ## note: find_package(catkin REQUIRED COMPONENTS xyz)
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  sensor_msgs
+  cv_bridge
+  image_transport
+)
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
 
