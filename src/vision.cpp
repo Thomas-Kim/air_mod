@@ -38,10 +38,43 @@ typedef pair<string, Mat> MatPair;
 
 image_transport::Subscriber img_sub;
 
+surf_map *smap;
+
 // put the detection stuff in here
 void callback(const sensor_msgs::ImageConstPtr &msg){
 
-  // Do SURF stuff in here
+    keypoints_t matched_keypoints;
+    fs::path matched_path;
+    naive_stats naive_model(training_path);
+    fs::path current_image;
+    keypoints_t current_keypoints;
+    vector<DMatch> matches;
+    Mat img_matches;
+
+    cv_bridge::CvImagePtr cv_ptr;
+    try
+    {
+      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("cv_bridge exception: %s", e.what());
+      return;
+    }
+
+    // Access image by doing cv_ptr->image
+    // Do it like this?
+    // matches = smap->match(cv_ptr->image, matched_keypoints, matched_path, current_keypoints);
+
+    //detection.get_new_images();
+    //for(vector<path>::const_iterator itr = detection.begin(); itr != detection.end(); ++itr){
+        // Need to do surf_map smap?
+        //matches = smap.match(*itr, matched_keypoints, matched_path, current_keypoints);
+
+	// smap.match(path img, keypoints_t &matched_keypoints, path &matched_path, keypoints_t &detection_keypoints);
+	// want to change smap.match to accept an image instead
+
+	// also!! want to have something that converts the ImageConstPtr to an image
 
 }
 
@@ -86,14 +119,14 @@ int main(int argc, char * argv[]){
     /* End of command line argument processing */
 
     /* get_images defined in directory.cpp */
-    image_folder training(training_path); //
+    image_folder training(training_path);
     image_folder detection(detection_path); //
 
     /* Initialize main window and SURF */
     initModule_nonfree();
     namedWindow("Chicken", WINDOW_AUTOSIZE);
 
-    surf_map smap(surf_threshold);
+    smap = new surf_map(surf_threshold);
     
     training.get_new_images();
     for(vector<path>::const_iterator itr = training.begin(); itr != training.end(); ++itr){
@@ -102,6 +135,8 @@ int main(int argc, char * argv[]){
     }
     smap.init();
 
+
+    /*** Need to move this somewhere else? Ok. ***/
     keypoints_t matched_keypoints;
     /* descriptors_t matched_descriptors; */
     fs::path matched_path;
